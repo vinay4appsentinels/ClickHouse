@@ -146,7 +146,7 @@ public:
         chars.resize_assume_reserved(chars.size() - n * elems);
     }
 
-    void deserializeAndInsertFromArena(ReadBuffer & in) override;
+    void deserializeAndInsertFromArena(ReadBuffer & in, const IColumn::SerializationSettings * settings) override;
 
     void skipSerializedInArena(ReadBuffer & in) const override;
 

@@ -22,6 +22,7 @@
 #include <Core/Defines.h>
 #include <memory>
 #include <cassert>
+#include <Common/HashTable/Hash.h>
 
 #include <Poco/Logger.h>
 #include <Common/logger_useful.h>
@@ -341,6 +342,15 @@ struct HashMethodSingleLowCardinalityColumn : public SingleColumnMethod
     }
 };
 
+class HashMethodSerializedContext : public HashMethodContext
+{
+public:
+    explicit HashMethodSerializedContext(const HashMethodContextSettings & settings_)
+        : settings(settings_)
+    {}
+
+    HashMethodContextSettings settings;
+};
 
 /** Hash by concatenating serialized key values.
   * The serialized value differs in that it uniquely allows to deserialize it, having only the position with which it starts.
@@ -353,6 +363,11 @@ struct HashMethodSerialized
 {
     using Self = HashMethodSerialized<Value, Mapped, nullable, prealloc>;
     using Base = columns_hashing_impl::HashMethodBase<Self, Value, Mapped, false>;
+
+    static HashMethodContextPtr createContext(const HashMethodContextSettings & settings)
+    {
+        return std::make_shared<HashMethodSerializedContext>(settings);
+    }
 
     static constexpr bool has_cheap_key_calculation = false;
 

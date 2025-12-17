@@ -1608,6 +1608,8 @@ void TCPHandler::sendProfileEvents(QueryState & state)
 
     Stopwatch stopwatch;
     Block block = ProfileEvents::getProfileEvents(host_name, state.profile_queue, state.last_sent_snapshots);
+    LOG_DEBUG(log, "In processOrdinaryQuery, Call sendSelectProfileEvents()");
+
     if (block.rows() != 0)
     {
         initProfileEventsBlockOutput(state, block);

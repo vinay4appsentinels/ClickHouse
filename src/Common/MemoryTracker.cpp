@@ -271,6 +271,9 @@ AllocationTrace MemoryTracker::allocImpl(Int64 size, bool throw_if_memory_exceed
             /// For global memory tracker always update memory usage.
             Int64 will_be = amount.fetch_add(size, std::memory_order_relaxed);
             rss.fetch_add(size, std::memory_order_relaxed);
+            LOG_DEBUG(
+            getLogger("MemoryTracker"),
+                "In MemoryTracker::allocImpl, level == VariableContext::Global");
             updatePeak(will_be, /*log_memory_usage=*/ false);
 
             auto metric_loaded = metric.load(std::memory_order_relaxed);
@@ -423,6 +426,9 @@ AllocationTrace MemoryTracker::allocImpl(Int64 size, bool throw_if_memory_exceed
             // This memory is already counted in variable `amount` in the moment of `will_be` initialization.
             // Now we just need to update value stored in `will_be`, because it should have changed.
             will_be = amount.load(std::memory_order_relaxed);
+            LOG_DEBUG(
+            getLogger("MemoryTracker"),
+                "In MemoryTracker::allocImpl, will_be is updated to {}.",will_be);
         }
         else
         {
@@ -499,10 +505,17 @@ void MemoryTracker::adjustOnBackgroundTaskEnd(const MemoryTracker * child)
 bool MemoryTracker::updatePeak(Int64 will_be, bool log_memory_usage)
 {
     auto peak_old = peak.load(std::memory_order_relaxed);
+        LOG_DEBUG(
+        getLogger("MemoryTracker"),
+        "In MemoryTracker::updatePeak, will_be={}, peak_old={}.",
+        will_be, peak_old);
     if (will_be > peak_old)        /// Races doesn't matter. Could rewrite with CAS, but not worth.
     {
         peak.store(will_be, std::memory_order_relaxed);
-
+        LOG_DEBUG(
+            getLogger("MemoryTracker"),
+            "In MemoryTracker::updatePeak, updated peak memory usage to {}.",
+            will_be);
         if (log_memory_usage && (level == VariableContext::Process || level == VariableContext::Global)
             && will_be / log_peak_memory_usage_every > peak_old / log_peak_memory_usage_every)
             logMemoryUsage(will_be);

@@ -230,7 +230,7 @@ Supports XPath 1.0 subset:
              "Second"}
         };
         FunctionDocumentation::Category category = FunctionDocumentation::Category::String;
-        FunctionDocumentation documentation = {description, syntax, arguments, returned_value, examples, {}, category};
+        FunctionDocumentation documentation = {.description = description, .syntax = syntax, .arguments = arguments, .returned_value = returned_value, .examples = examples, .category = category};
 
         factory.registerFunction<FunctionXMLExtractString>(documentation);
     }
@@ -258,7 +258,7 @@ XML fragment including tags. Namespace prefixes are stripped during element matc
              "<item id=\"1\">Hello</item>"}
         };
         FunctionDocumentation::Category category = FunctionDocumentation::Category::String;
-        FunctionDocumentation documentation = {description, syntax, arguments, returned_value, examples, {}, category};
+        FunctionDocumentation documentation = {.description = description, .syntax = syntax, .arguments = arguments, .returned_value = returned_value, .examples = examples, .category = category};
 
         factory.registerFunction<FunctionXMLExtractRaw>(documentation);
     }

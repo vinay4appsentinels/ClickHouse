@@ -279,7 +279,7 @@ Examples:
              "id"}
         };
         FunctionDocumentation::Category category = FunctionDocumentation::Category::String;
-        FunctionDocumentation documentation = {description, syntax, arguments, returned_value, examples, {}, category};
+        FunctionDocumentation documentation = {.description = description, .syntax = syntax, .arguments = arguments, .returned_value = returned_value, .examples = examples, .category = category};
 
         factory.registerFunction<FunctionGraphQLExtractString>(documentation);
     }
@@ -310,7 +310,7 @@ Variable names should be specified without the $ prefix.
              "ID!"}
         };
         FunctionDocumentation::Category category = FunctionDocumentation::Category::String;
-        FunctionDocumentation documentation = {description, syntax, arguments, returned_value, examples, {}, category};
+        FunctionDocumentation documentation = {.description = description, .syntax = syntax, .arguments = arguments, .returned_value = returned_value, .examples = examples, .category = category};
 
         factory.registerFunction<FunctionGraphQLExtractVariable>(documentation);
     }
@@ -343,7 +343,7 @@ For anonymous queries (starting with {), returns 'query'.
              "query"}
         };
         FunctionDocumentation::Category category = FunctionDocumentation::Category::String;
-        FunctionDocumentation documentation = {description, syntax, arguments, returned_value, examples, {}, category};
+        FunctionDocumentation documentation = {.description = description, .syntax = syntax, .arguments = arguments, .returned_value = returned_value, .examples = examples, .category = category};
 
         factory.registerFunction<FunctionGraphQLGetOperationType>(documentation);
     }

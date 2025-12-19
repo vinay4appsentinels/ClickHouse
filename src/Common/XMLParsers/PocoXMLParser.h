@@ -34,7 +34,7 @@ public:
     Node getRootNode() const;
 
     /// Get the underlying Poco document.
-    Poco::XML::Document * getDocument() const { return document_.get(); }
+    const Poco::XML::Document * getDocument() const { return document_.get(); }
 
 private:
     Poco::XML::DOMParser parser_;

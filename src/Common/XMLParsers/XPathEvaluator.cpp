@@ -1,5 +1,6 @@
 #include <Common/XMLParsers/XPathEvaluator.h>
 
+#include <Poco/DOM/NamedNodeMap.h>
 #include <Poco/DOM/Node.h>
 
 #include <algorithm>

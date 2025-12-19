@@ -18,7 +18,7 @@ bool PocoXMLParser::parse(std::string_view xml)
     try
     {
         document_ = parser_.parseMemory(xml.data(), xml.size());
-        return document_ != nullptr;
+        return document_.get() != nullptr;
     }
     catch (const Poco::Exception &)
     {

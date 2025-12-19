@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Only include what we need
+!build/programs/clickhouse
+!docker/server/docker_related_config.xml
+!docker/server/entrypoint.sh

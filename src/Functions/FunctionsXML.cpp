@@ -1,3 +1,4 @@
+#include <Columns/ColumnConst.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnString.h>
 #include <DataTypes/DataTypeNullable.h>
@@ -35,7 +36,7 @@ public:
 
     String getName() const override { return name; }
     size_t getNumberOfArguments() const override { return 2; }
-    bool useDefaultImplementationForConstants() const override { return true; }
+    bool useDefaultImplementationForConstants() const override { return false; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override { return true; }
 
     DataTypePtr getReturnTypeImpl(const DataTypes & arguments) const override
@@ -60,12 +61,23 @@ public:
     ColumnPtr executeImpl(const ColumnsWithTypeAndName & arguments, const DataTypePtr &, size_t input_rows_count) const override
     {
         const ColumnString * xml_col = checkAndGetColumn<ColumnString>(arguments[0].column.get());
+        const ColumnConst * xml_col_const = checkAndGetColumnConst<ColumnString>(arguments[0].column.get());
         const ColumnString * xpath_col = checkAndGetColumn<ColumnString>(arguments[1].column.get());
+        const ColumnConst * xpath_col_const = checkAndGetColumnConst<ColumnString>(arguments[1].column.get());
 
-        if (!xml_col)
+        if (!xml_col && !xml_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "First argument for function {} must be String", getName());
-        if (!xpath_col)
+        if (!xpath_col && !xpath_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Second argument for function {} must be String", getName());
+
+        /// Get constant values if available
+        std::string const_xpath;
+        if (xpath_col_const)
+            const_xpath = xpath_col_const->getValue<String>();
+
+        std::string const_xml;
+        if (xml_col_const)
+            const_xml = xml_col_const->getValue<String>();
 
         auto result_col = ColumnString::create();
         auto null_map = ColumnUInt8::create(input_rows_count, 0);
@@ -77,8 +89,8 @@ public:
 
         for (size_t i = 0; i < input_rows_count; ++i)
         {
-            std::string_view xml = xml_col->getDataAt(i).toView();
-            std::string_view xpath = xpath_col->getDataAt(i).toView();
+            std::string_view xml = xml_col ? xml_col->getDataAt(i).toView() : std::string_view(const_xml);
+            std::string_view xpath = xpath_col ? xpath_col->getDataAt(i).toView() : std::string_view(const_xpath);
 
             bool found = false;
             if (parser.parse(xml))
@@ -119,7 +131,7 @@ public:
 
     String getName() const override { return name; }
     size_t getNumberOfArguments() const override { return 2; }
-    bool useDefaultImplementationForConstants() const override { return true; }
+    bool useDefaultImplementationForConstants() const override { return false; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override { return true; }
 
     DataTypePtr getReturnTypeImpl(const DataTypes & arguments) const override
@@ -144,12 +156,23 @@ public:
     ColumnPtr executeImpl(const ColumnsWithTypeAndName & arguments, const DataTypePtr &, size_t input_rows_count) const override
     {
         const ColumnString * xml_col = checkAndGetColumn<ColumnString>(arguments[0].column.get());
+        const ColumnConst * xml_col_const = checkAndGetColumnConst<ColumnString>(arguments[0].column.get());
         const ColumnString * xpath_col = checkAndGetColumn<ColumnString>(arguments[1].column.get());
+        const ColumnConst * xpath_col_const = checkAndGetColumnConst<ColumnString>(arguments[1].column.get());
 
-        if (!xml_col)
+        if (!xml_col && !xml_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "First argument for function {} must be String", getName());
-        if (!xpath_col)
+        if (!xpath_col && !xpath_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Second argument for function {} must be String", getName());
+
+        /// Get constant values if available
+        std::string const_xpath;
+        if (xpath_col_const)
+            const_xpath = xpath_col_const->getValue<String>();
+
+        std::string const_xml;
+        if (xml_col_const)
+            const_xml = xml_col_const->getValue<String>();
 
         auto result_col = ColumnString::create();
         auto null_map = ColumnUInt8::create(input_rows_count, 0);
@@ -161,8 +184,8 @@ public:
 
         for (size_t i = 0; i < input_rows_count; ++i)
         {
-            std::string_view xml = xml_col->getDataAt(i).toView();
-            std::string_view xpath = xpath_col->getDataAt(i).toView();
+            std::string_view xml = xml_col ? xml_col->getDataAt(i).toView() : std::string_view(const_xml);
+            std::string_view xpath = xpath_col ? xpath_col->getDataAt(i).toView() : std::string_view(const_xpath);
 
             bool found = false;
             if (parser.parse(xml))

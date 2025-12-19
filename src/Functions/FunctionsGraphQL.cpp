@@ -1,3 +1,4 @@
+#include <Columns/ColumnConst.h>
 #include <Columns/ColumnNullable.h>
 #include <Columns/ColumnString.h>
 #include <DataTypes/DataTypeNullable.h>
@@ -32,7 +33,7 @@ public:
 
     String getName() const override { return name; }
     size_t getNumberOfArguments() const override { return 2; }
-    bool useDefaultImplementationForConstants() const override { return true; }
+    bool useDefaultImplementationForConstants() const override { return false; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override { return true; }
 
     DataTypePtr getReturnTypeImpl(const DataTypes & arguments) const override
@@ -57,12 +58,22 @@ public:
     ColumnPtr executeImpl(const ColumnsWithTypeAndName & arguments, const DataTypePtr &, size_t input_rows_count) const override
     {
         const ColumnString * query_col = checkAndGetColumn<ColumnString>(arguments[0].column.get());
+        const ColumnConst * query_col_const = checkAndGetColumnConst<ColumnString>(arguments[0].column.get());
         const ColumnString * path_col = checkAndGetColumn<ColumnString>(arguments[1].column.get());
+        const ColumnConst * path_col_const = checkAndGetColumnConst<ColumnString>(arguments[1].column.get());
 
-        if (!query_col)
+        if (!query_col && !query_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "First argument for function {} must be String", getName());
-        if (!path_col)
+        if (!path_col && !path_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Second argument for function {} must be String", getName());
+
+        std::string const_query;
+        if (query_col_const)
+            const_query = query_col_const->getValue<String>();
+
+        std::string const_path;
+        if (path_col_const)
+            const_path = path_col_const->getValue<String>();
 
         auto result_col = ColumnString::create();
         auto null_map = ColumnUInt8::create(input_rows_count, 0);
@@ -73,8 +84,8 @@ public:
 
         for (size_t i = 0; i < input_rows_count; ++i)
         {
-            std::string_view query = query_col->getDataAt(i).toView();
-            std::string_view path = path_col->getDataAt(i).toView();
+            std::string_view query = query_col ? query_col->getDataAt(i).toView() : std::string_view(const_query);
+            std::string_view path = path_col ? path_col->getDataAt(i).toView() : std::string_view(const_path);
 
             bool found = false;
             if (parser.parse(query))
@@ -111,7 +122,7 @@ public:
 
     String getName() const override { return name; }
     size_t getNumberOfArguments() const override { return 2; }
-    bool useDefaultImplementationForConstants() const override { return true; }
+    bool useDefaultImplementationForConstants() const override { return false; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override { return true; }
 
     DataTypePtr getReturnTypeImpl(const DataTypes & arguments) const override
@@ -136,12 +147,22 @@ public:
     ColumnPtr executeImpl(const ColumnsWithTypeAndName & arguments, const DataTypePtr &, size_t input_rows_count) const override
     {
         const ColumnString * query_col = checkAndGetColumn<ColumnString>(arguments[0].column.get());
+        const ColumnConst * query_col_const = checkAndGetColumnConst<ColumnString>(arguments[0].column.get());
         const ColumnString * name_col = checkAndGetColumn<ColumnString>(arguments[1].column.get());
+        const ColumnConst * name_col_const = checkAndGetColumnConst<ColumnString>(arguments[1].column.get());
 
-        if (!query_col)
+        if (!query_col && !query_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "First argument for function {} must be String", getName());
-        if (!name_col)
+        if (!name_col && !name_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Second argument for function {} must be String", getName());
+
+        std::string const_query;
+        if (query_col_const)
+            const_query = query_col_const->getValue<String>();
+
+        std::string const_name;
+        if (name_col_const)
+            const_name = name_col_const->getValue<String>();
 
         auto result_col = ColumnString::create();
         auto null_map = ColumnUInt8::create(input_rows_count, 0);
@@ -152,8 +173,8 @@ public:
 
         for (size_t i = 0; i < input_rows_count; ++i)
         {
-            std::string_view query = query_col->getDataAt(i).toView();
-            std::string_view var_name = name_col->getDataAt(i).toView();
+            std::string_view query = query_col ? query_col->getDataAt(i).toView() : std::string_view(const_query);
+            std::string_view var_name = name_col ? name_col->getDataAt(i).toView() : std::string_view(const_name);
 
             bool found = false;
             if (parser.parse(query))
@@ -189,7 +210,7 @@ public:
 
     String getName() const override { return name; }
     size_t getNumberOfArguments() const override { return 1; }
-    bool useDefaultImplementationForConstants() const override { return true; }
+    bool useDefaultImplementationForConstants() const override { return false; }
     bool isSuitableForShortCircuitArgumentsExecution(const DataTypesWithConstInfo &) const override { return true; }
 
     DataTypePtr getReturnTypeImpl(const DataTypes & arguments) const override
@@ -207,9 +228,14 @@ public:
     ColumnPtr executeImpl(const ColumnsWithTypeAndName & arguments, const DataTypePtr &, size_t input_rows_count) const override
     {
         const ColumnString * query_col = checkAndGetColumn<ColumnString>(arguments[0].column.get());
+        const ColumnConst * query_col_const = checkAndGetColumnConst<ColumnString>(arguments[0].column.get());
 
-        if (!query_col)
+        if (!query_col && !query_col_const)
             throw Exception(ErrorCodes::ILLEGAL_COLUMN, "Argument for function {} must be String", getName());
+
+        std::string const_query;
+        if (query_col_const)
+            const_query = query_col_const->getValue<String>();
 
         auto result_col = ColumnString::create();
         auto null_map = ColumnUInt8::create(input_rows_count, 0);
@@ -220,7 +246,7 @@ public:
 
         for (size_t i = 0; i < input_rows_count; ++i)
         {
-            std::string_view query = query_col->getDataAt(i).toView();
+            std::string_view query = query_col ? query_col->getDataAt(i).toView() : std::string_view(const_query);
 
             bool found = false;
             if (parser.parse(query))

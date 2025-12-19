@@ -23,8 +23,27 @@ XPathEvaluator::NodeList XPathEvaluator::evaluate(const Node & context, const st
     NodeList current_nodes;
     current_nodes.push_back(context);
 
-    for (const auto & step : steps)
-        current_nodes = applyStep(current_nodes, step);
+    size_t start_index = 0;
+
+    /// For absolute paths like /root/item where context is already the root element,
+    /// skip the first step if it matches the context node name.
+    if (!steps.empty() && !xpath.empty() && xpath[0] == '/' && xpath[1] != '/')
+    {
+        const auto & first_step = steps[0];
+        if (first_step.axis == Axis::Child && first_step.node_test != "*"
+            && first_step.node_test != "node()" && first_step.node_test != "text()")
+        {
+            std::string context_name = context.localName();
+            if (context_name == first_step.node_test)
+            {
+                /// Context already matches first step, skip it
+                start_index = 1;
+            }
+        }
+    }
+
+    for (size_t i = start_index; i < steps.size(); ++i)
+        current_nodes = applyStep(current_nodes, steps[i]);
 
     return current_nodes;
 }
